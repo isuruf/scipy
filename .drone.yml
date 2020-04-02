@@ -5,6 +5,7 @@ name: linux_aarch64_python3.7
 platform:
   os: linux
   arch: arm64
+  dist: bionic
 
 steps:
 - name: Install and build
