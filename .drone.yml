@@ -18,7 +18,7 @@ steps:
   commands:
     - python -c 'import sys; print("Python debug build:", hasattr(sys, "gettotalrefcount"))'
     - apt-get update
-    - apt-get install wget libatlas-base-dev liblapack-dev gfortran libgmp-dev libmpfr-dev libsuitesparse-dev swig libmpc-dev
+    - apt-get -yq install wget libatlas-base-dev liblapack-dev gfortran libgmp-dev libmpfr-dev libsuitesparse-dev swig libmpc-dev
     - wget -q "https://github.com/conda-forge/miniforge/releases/download/4.8.2-1/Miniforge3-4.8.2-1-Linux-aarch64.sh"  -O miniconda.sh
     - chmod +x miniconda.sh
     - ./miniconda.sh -b -p $HOME/miniconda3
