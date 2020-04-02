@@ -47,8 +47,6 @@ steps:
     
     - conda install pytest scipy mpmath Cython pybind11 coverage
 
-   script:
-
     - python -c 'import numpy as np; print("relaxed strides checking:", np.ones((10,1),order="C").flags.f_contiguous)'
 
     # Make sure that relaxed strides checking is actually in effect; otherwise fail loudly
@@ -69,30 +67,3 @@ steps:
 
     - ./tools/check_pyext_symbol_hiding.sh build
 
-  after_script:
-
-    - ccache -s
-
-    # Upload coverage information
-
-    - |
-
-    if [ -n "${COVERAGE}" ]; then
-
-        RUN_DIR=`echo build/testenv/lib/python*/site-packages`
-
-        # Produce gcov output for codecov to find
-
-        find build -name '*.gcno' -type f -exec gcov -pb {} +
-
-        mv *.gcov "$RUN_DIR/"
-
-        # Run codecov
-
-        pushd "$RUN_DIR"
-
-        codecov -X gcov
-
-        popd
-
-    fi
