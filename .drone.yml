@@ -9,7 +9,7 @@ platform:
 
 steps:
 - name: Install and build
-  image: condaforge/linux-anvil-aarch64
+  image: arm64v8/python:3.7
   environment:
     CONFIG: linux_aarch64_python3.7
     PLATFORM: linux-aarch64
