@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: linux_aarch64_python3.6
+name: linux_aarch64_python3.7
 
 platform:
   os: linux
@@ -8,6 +8,7 @@ platform:
 
 steps:
 - name: Install and build
+  image: condaforge/linux-anvil-aarch64
   environment:
     CONFIG: linux_aarch64_python3.7
     PLATFORM: linux-aarch64
