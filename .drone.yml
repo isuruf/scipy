@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: linux_aarch64_python3.7
+name: linux_aarch64_python3.6
 
 platform:
   os: linux
