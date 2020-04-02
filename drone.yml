@@ -1,0 +1,196 @@
+---
+kind: pipeline
+name: linux_aarch64_python3.7
+
+platform:
+
+  os: linux
+
+  arch: arm64
+
+
+
+steps:
+
+- name: Install and build
+
+
+  environment:
+
+    CONFIG: linux_aarch64_python3.7
+
+    PLATFORM: linux-aarch64
+    
+    TESTMODE: full
+    
+    COVERAGE:
+
+  commands:
+
+    - python -c 'import sys; print("Python debug build:", hasattr(sys, "gettotalrefcount"))'
+
+    - wget -q "https://github.com/conda-forge/miniforge/releases/download/4.8.2-1/Miniforge3-4.8.2-1-Linux-aarch64.sh"  -O miniconda.sh;
+
+    - chmod +x miniconda.sh;
+
+    - ./miniconda.sh -b -p $HOME/miniconda3;
+
+    - export PATH=$HOME/miniconda3/bin:$PATH;
+
+    - conda config --set always_yes yes --set auto_update_conda false;
+
+    - conda install pip conda;
+    
+    - conda update -n base conda;
+    
+    - conda info -a;
+    
+    - conda install pytest scipy mpmath Cython pybind11 coverage;
+
+   script:
+
+    - python -c 'import numpy as np; print("relaxed strides checking:", np.ones((10,1),order="C").flags.f_contiguous)'
+
+    # Make sure that relaxed strides checking is actually in effect; otherwise fail loudly
+
+    - if [ "$NPY_RELAXED_STRIDES_CHECKING" == "1" ]; then python -c'import numpy as np; assert np.ones((10,1),order="C").flags.f_contiguous'; fi
+
+    # Test that mpmath actually uses gmpy2
+
+    - python -u runtests.py -g -m $TESTMODE $COVERAGE $USE_WHEEL_BUILD -- -rfEX | tee runtests.log
+
+    - tools/validate_runtests_log.py $TESTMODE < runtests.log
+
+    - if [ "${REFGUIDE_CHECK}" == "1" ]; then python runtests.py -g --refguide-check; fi
+
+    - if [ "${ASV_CHECK}" == "1" ]; then (cd benchmarks && python -masv check -E existing); fi
+
+    # Check dynamic symbol hiding works on Linux
+
+    - ./tools/check_pyext_symbol_hiding.sh build
+
+  after_script:
+
+    - ccache -s
+
+    # Upload coverage information
+
+    - |
+
+    if [ -n "${COVERAGE}" ]; then
+
+        RUN_DIR=`echo build/testenv/lib/python*/site-packages`
+
+        # Produce gcov output for codecov to find
+
+        find build -name '*.gcno' -type f -exec gcov -pb {} +
+
+        mv *.gcov "$RUN_DIR/"
+
+        # Run codecov
+
+        pushd "$RUN_DIR"
+
+        codecov -X gcov
+
+        popd
+
+    fi
+
+---
+
+kind: pipeline
+
+name: linux_aarch64_python3.7
+
+
+
+platform:
+
+  os: linux
+
+  arch: arm64
+
+
+
+steps:
+
+- name: Install and build
+
+  environment:
+
+    CONFIG: linux_aarch64_python3.7
+
+    PLATFORM: linux-aarch64
+    
+    TESTMODE: fast
+    
+    COVERAGE:
+
+  commands:
+
+    - export FEEDSTOCK_ROOT="$DRONE_WORKSPACE"
+
+    - export RECIPE_ROOT="$FEEDSTOCK_ROOT/recipe"
+
+    - export CI=drone
+
+    - export GIT_BRANCH="$DRONE_BRANCH"
+
+    - sed -i '$ichown -R conda:conda "$FEEDSTOCK_ROOT"' /opt/docker/bin/entrypoint
+
+    - /opt/docker/bin/entrypoint $FEEDSTOCK_ROOT/.scripts/build_steps.sh
+
+    - echo "Done building"
+
+
+
+---
+
+kind: pipeline
+
+name: linux_aarch64_python3.8
+
+
+
+platform:
+
+  os: linux
+
+  arch: arm64
+
+
+
+steps:
+
+- name: Install and build
+
+  image: condaforge/linux-anvil-aarch64
+
+  environment:
+
+    CONFIG: linux_aarch64_python3.8
+
+    UPLOAD_PACKAGES: True
+
+    PLATFORM: linux-aarch64
+
+    BINSTAR_TOKEN: 
+
+      from_secret: BINSTAR_TOKEN
+
+  commands:
+
+    - export FEEDSTOCK_ROOT="$DRONE_WORKSPACE"
+
+    - export RECIPE_ROOT="$FEEDSTOCK_ROOT/recipe"
+
+    - export CI=drone
+
+    - export GIT_BRANCH="$DRONE_BRANCH"
+
+    - sed -i '$ichown -R conda:conda "$FEEDSTOCK_ROOT"' /opt/docker/bin/entrypoint
+
+    - /opt/docker/bin/entrypoint $FEEDSTOCK_ROOT/.scripts/build_steps.sh
+
+    - echo "Done building"
