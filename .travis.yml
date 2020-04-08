@@ -101,7 +101,7 @@ script:
   # Make sure that relaxed strides checking is actually in effect; otherwise fail loudly
   - if [ "$NPY_RELAXED_STRIDES_CHECKING" == "1" ]; then python -c'import numpy as np; assert np.ones((10,1),order="C").flags.f_contiguous'; fi
   # Test that mpmath actually uses gmpy2
-  - python -u runtests.py --parallel=2 
+  - python -u runtests.py --parallel=3
   - tools/validate_runtests_log.py $TESTMODE < runtests.log
   - if [ "${REFGUIDE_CHECK}" == "1" ]; then python runtests.py -g --refguide-check; fi
   - if [ "${ASV_CHECK}" == "1" ]; then (cd benchmarks && python -masv check -E existing); fi
