@@ -27,7 +27,7 @@ steps:
     - conda install pip conda
     - conda update -n base conda 
     - conda info -a  
-    - conda install pytest scipy mpmath Cython pybind11 coverage
+    - conda install pytest scipy mpmath Cython pybind11 coverage pytest-xdist
     - python -c 'import numpy as np; print("relaxed strides checking:", np.ones((10,1),order="C").flags.f_contiguous)'
     # Make sure that relaxed strides checking is actually in effect; otherwise fail loudly
     - if [ "$NPY_RELAXED_STRIDES_CHECKING" == "1" ]; then python -c'import numpy as np; assert np.ones((10,1),order="C").flags.f_contiguous'; fi
